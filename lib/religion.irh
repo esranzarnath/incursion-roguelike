@@ -4118,7 +4118,9 @@ God "Maeve"
           MA_CHOICE2          5
           MA_CHOICE2          5,
       * GOD_RELATIONS
-          REL_DEFAULT   3     1,
+          REL_DEFAULT   3     1
+          /* Maeve likes Essiah, even if Essiah does not like Maeve */
+          $"Essiah" 0 0,
       * CROWNING_GIFTS
           $"Nine Lives Stealer",
       * FAVOUR_CHART
