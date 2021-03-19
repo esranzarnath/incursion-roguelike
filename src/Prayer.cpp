@@ -2103,9 +2103,13 @@ EvReturn Character::AlignedAct(EventInfo &e)
     alignGE = max(-70,min(70,alignGE));
       
     if (alignLC > -20)
-      nAlign &= (~AL_LAWFUL);
+        nAlign &= (~AL_LAWFUL);
+    else
+        nAlign |= AL_LAWFUL;
     if (alignLC < 20)
-      nAlign &= (~AL_CHAOTIC);
+        nAlign &= (~AL_CHAOTIC);
+    else
+        nAlign |= AL_CHAOTIC;
       
     if (abs(alignLC) < 20 && !(cAlign & (AL_LAWFUL|AL_CHAOTIC)) && 
          (e.EParam & (AL_CHAOTIC|AL_LAWFUL|AL_NONCHAOTIC|AL_NONLAWFUL)))
