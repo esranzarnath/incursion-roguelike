@@ -685,7 +685,7 @@ system int16   T_EVENTINFO::Event;
 system int16   T_EVENTINFO::EXVal;
 system int16   T_EVENTINFO::EYVal;
 system int16   T_EVENTINFO::ESpellNum;
-system int16   T_EVENTINFO::EParam;
+system int32   T_EVENTINFO::EParam;
 system int16   T_EVENTINFO::EDir;
 system int8    T_EVENTINFO::vRoll;
 system int8    T_EVENTINFO::AType;
