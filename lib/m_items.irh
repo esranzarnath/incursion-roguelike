@@ -4461,9 +4461,9 @@ and EA_GRANT
   { xval: STAFF_SPELLS;
     Lists:
       * STAFF_SPELL_LIST
-          1 $"gaseous form" $"gust of wind" $"wind wall"
-            $"air walk" $"cloudkill"
-          2 $"chain lightning";
+          $"gaseous form" $"gust of wind" $"wind wall"
+          $"air walk" $"cloudkill"
+          $"chain lightning";
   }
 and EA_GRANT
   { xval: EXTRA_ABILITY; yval: CA_SLOW_FALL; pval: 1; }
@@ -4534,8 +4534,8 @@ and EA_GRANT
   { xval: STAFF_SPELLS;
     Lists:
       * STAFF_SPELL_LIST
-          1 $"meld into stone" $"stoneskin" $"soften stone"
-            $"tremor" $"wall of stone" $"stone tell";
+          $"meld into stone" $"stoneskin" $"soften stone"
+          $"tremor" $"wall of stone" $"stone tell";
   }
 and EA_GRANT
   { xval: SUSTAIN; yval: A_STR; pval: 10; }
@@ -4608,9 +4608,9 @@ and EA_GRANT
   { xval: STAFF_SPELLS;
     Lists:
       * STAFF_SPELL_LIST
-          1 $"burning hands" $"flaming sphere" $"pyrotechnics"
-            $"wall of fire" $"flame blade" 
-          2 $"flame strike";
+          $"burning hands" $"flaming sphere" $"pyrotechnics"
+          $"wall of fire" $"flame blade" 
+          $"flame strike";
   }
 and EA_GRANT
   { xval: RESIST; yval: AD_FIRE; pval: 12; }
@@ -4687,8 +4687,8 @@ and EA_GRANT
   { xval: STAFF_SPELLS;
     Lists:
       * STAFF_SPELL_LIST
-          1 $"create water" $"water walking" $"waterspout"
-            $"wall of ice" $"ice storm" $"part water";
+          $"create water" $"water walking" $"waterspout"
+          $"wall of ice" $"ice storm" $"part water";
   }
 and EA_GRANT
   { xval: WATER_BREATHING; }
