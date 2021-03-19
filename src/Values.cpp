@@ -690,18 +690,18 @@ Restart:
     StatiIterEnd(this)
 
     {
-		int16 n_add = 0, n_div = 1;
+        int16 n_add = 0, n_div = 1;
         // Concentration cancels pain as does Pain Tolerance
-		if (HasSkill(SK_CONCENT))
-			n_add = max(((SkillLevel(SK_CONCENT) - 8) / 2), 0);
+        if (HasSkill(SK_CONCENT))
+            n_add = max(((SkillLevel(SK_CONCENT) - 8) / 2), 0);
         if (this->HasFeat(FT_PAIN_TOLERANCE))
             n_div = 2;
-		if (n_add > 0 || n_div != 1)
-			for (i = 0; i != ATTR_LAST; i++)
-				if (AttrAdj[i][BONUS_PAIN] < 0) {
-					AttrAdj[i][BONUS_PAIN] = min(0, AttrAdj[i][BONUS_PAIN] + n_add);
-					AttrAdj[i][BONUS_PAIN] = AttrAdj[i][BONUS_PAIN] / n_div;
-				}
+        if (n_add > 0 || n_div != 1)
+            for (i = 0; i != ATTR_LAST; i++)
+                if (AttrAdj[i][BONUS_PAIN] < 0) {
+                    AttrAdj[i][BONUS_PAIN] = min(0, AttrAdj[i][BONUS_PAIN] + n_add);
+                    AttrAdj[i][BONUS_PAIN] = AttrAdj[i][BONUS_PAIN] / n_div;
+                }
     }
 
     if (HasStati(MANIFEST))
@@ -1557,173 +1557,184 @@ bool Creature::InherentCreatureReach() {
 
 void Character::CalcValues(bool KnownOnly, Item *thrown)
 {
-  int16 i,j;
-  bool one_body = HasFeat(FT_ONE_BODY_ONE_SOUL) ||
-       (Attr[A_CON] == 0);
-       
-  /* HACKFIX */
-  if (theGame->inCalcVal)
-    return;
-       
-  /* Calculate both, but calculate the requested set of
-     stats first so that those values remain in the AttrAdj
-     array. */
-  if (!KnownOnly) {
-    Creature::CalcValues(true,thrown);
-    Creature::CalcValues(false,thrown);
-  }
-  else {
-    Creature::CalcValues(false,thrown);
-    Creature::CalcValues(true,thrown);
-  }
+    int16 i, j;
+    bool one_body = HasFeat(FT_ONE_BODY_ONE_SOUL) ||
+        (Attr[A_CON] == 0);
 
-  theGame->inCalcVal++;
+    /* HACKFIX */
+    if (theGame->inCalcVal)
+        return;
 
-  int8 a_hp = A_CON;
-  if (one_body && Mod(A_WIS) > Mod(A_CON))
-      a_hp = A_WIS; 
-
-  cHP -= mHP; mHP = 20;
-  int HDType = BestHDType();
-
-
-  if (!HasStati(POLYMORPH)) {
-    int lev = Level[0] + Level[1] + Level[2]; 
-    int templateHD = lev;
-    StatiIterNature(this,TEMPLATE)
-        templateHD = TTEM(S->eID)->HitDice.Adjust(templateHD);
-    StatiIterEnd(this)
-    templateHD -= lev;
-
-    if (templateHD > 0) {
-      if (isPlayer() && thisp->Opt(OPT_MAX_HP) == 2) // max hp
-        mHP += templateHD * max(1, Mod(a_hp) + HDType);
-      else 
-        mHP += templateHD * max(1, Mod(a_hp) + HDType/2);
+    /* Calculate both, but calculate the requested set of
+        stats first so that those values remain in the AttrAdj
+        array. */
+    if (!KnownOnly) {
+        Creature::CalcValues(true, thrown);
+        Creature::CalcValues(false, thrown);
+    }
+    else {
+        Creature::CalcValues(false, thrown);
+        Creature::CalcValues(true, thrown);
     }
 
-    if (HDType > 8) {
-      if (isPlayer() && thisp->Opt(OPT_MAX_HP) == 2) // max hp
-        mHP += lev * max(1, Mod(a_hp) + HDType);
-      else 
-        mHP += lev * max(1, Mod(a_hp) + HDType/2);
-    } else {
-      for (i=0;i!=3;i++)
+    theGame->inCalcVal++;
+
+    int8 a_hp = A_CON;
+    if (one_body && Mod(A_WIS) > Mod(A_CON))
+        a_hp = A_WIS;
+
+    cHP -= mHP; mHP = 20;
+    int HDType = BestHDType();
+
+
+    if (!HasStati(POLYMORPH)) {
+        int lev = Level[0] + Level[1] + Level[2];
+        int templateHD = lev;
+        StatiIterNature(this, TEMPLATE)
+            templateHD = TTEM(S->eID)->HitDice.Adjust(templateHD);
+        StatiIterEnd(this)
+            templateHD -= lev;
+
+        if (templateHD > 0) {
+            if (isPlayer() && thisp->Opt(OPT_MAX_HP) == 2) // max hp
+                mHP += templateHD * max(1, Mod(a_hp) + HDType);
+            else
+                mHP += templateHD * max(1, Mod(a_hp) + HDType / 2);
+        }
+
+        if (HDType > 8) {
+            if (isPlayer() && thisp->Opt(OPT_MAX_HP) == 2) // max hp
+                mHP += lev * max(1, Mod(a_hp) + HDType);
+            else
+                mHP += lev * max(1, Mod(a_hp) + HDType / 2);
+        }
+        else {
+            for (i = 0; i != 3; i++)
+                if (Level[i])
+                {
+                    for (j = 0; j != Level[i]; j++)
+                        mHP += max(1, Mod(a_hp) + thisp->hpRolls[i][j]);
+                }
+        }
+    }
+    else {
+        int numHD = TMON(mID)->HitDice;
+        StatiIterNature(this, TEMPLATE)
+            numHD = TTEM(S->eID)->HitDice.Adjust(numHD);
+        StatiIterEnd(this)
+
+            // sadly, we can't really "roll" here 
+            if (isPlayer() && thisp->Opt(OPT_MAX_HP) == 2) // max hp
+                mHP += numHD * max(1, Mod(a_hp) + HDType);
+            else
+                mHP += numHD * max(1, Mod(a_hp) + HDType / 2);
+    }
+
+
+    if (HasAbility(CA_TOUGH_AS_HELL))
+        mHP += AbilityLevel(CA_TOUGH_AS_HELL) * max(0, Mod(a_hp));
+    if (HasFeat(FT_TOUGHNESS))
+        mHP += (mHP / 4);
+
+    if (!HasMFlag(M_NO_SIZE_HP))
+        switch (Attr[A_SIZ]) {
+        case SZ_MINISCULE:      mHP /= 2; break;
+        case SZ_TINY:           mHP = (mHP * 7) / 10; break;
+        case SZ_SMALL:          mHP = (mHP * 9) / 10; break;
+        case SZ_MEDIUM:         break;
+        case SZ_LARGE:          mHP = (mHP * 11) / 10; break;
+        case SZ_HUGE:           mHP = (mHP * 13) / 10; break;
+        case SZ_GARGANTUAN:     mHP = (mHP * 16) / 10; break;
+        case SZ_COLLOSAL:       mHP = (mHP * 20) / 10; break;
+        }
+
+    cHP += mHP;
+
+    if (cHP <= 0 && !isDead()) {
+        if (SavingThrow(FORT, 20, SA_DEATH)) {
+            IPrint("You stagger from the renewed seriousness of your injuries!");
+            cHP = 1;
+        }
+        else {
+            IDPrint("Belatedly, you drop dead.", "Belatedly, the <Obj> drops dead.", this);
+            Throw(EV_DEATH, this, this);
+        }
+    }
+
+    int16 a_mana = A_WIS;
+    if (one_body && Mod(A_CON) > Mod(A_WIS))
+        a_mana = A_CON;
+
+    mMana = 0;
+    for (i = 0; i != 3; i++)
         if (Level[i])
         {
-          for (j=0;j!=Level[i];j++)
-            mHP += max(1,Mod(a_hp) + thisp->hpRolls[i][j]);
+            for (j = 0; j != Level[i]; j++)
+                mMana += thisp->manaRolls[i][j];
         }
-    } 
-  } else {
-    int numHD = TMON(mID)->HitDice; 
-    StatiIterNature(this,TEMPLATE)
-        numHD = TTEM(S->eID)->HitDice.Adjust(numHD);
-    StatiIterEnd(this)
-
-    // sadly, we can't really "roll" here 
-    if (isPlayer() && thisp->Opt(OPT_MAX_HP) == 2) // max hp
-      mHP += numHD * max(1, Mod(a_hp) + HDType);
-    else 
-      mHP += numHD * max(1, Mod(a_hp) + HDType/2);
-  } 
 
 
-  if (HasAbility(CA_TOUGH_AS_HELL))
-    mHP += AbilityLevel(CA_TOUGH_AS_HELL) * max(0,Mod(a_hp));
-  if (HasFeat(FT_TOUGHNESS))
-    mHP += (mHP / 4);
+    mMana *= ManaMultiplier[TotalLevel()];
+    mMana += 10;
+    mMana += Mod((int8)a_mana) * TotalLevel();
 
-  if (!HasMFlag(M_NO_SIZE_HP))
-  switch(Attr[A_SIZ]) {
-    case SZ_MINISCULE:      mHP /= 2; break;
-    case SZ_TINY:           mHP = (mHP*7)/10; break;
-    case SZ_SMALL:          mHP = (mHP*9)/10; break;
-    case SZ_MEDIUM:         break;
-    case SZ_LARGE:          mHP = (mHP*11)/10; break;
-    case SZ_HUGE:           mHP = (mHP*13)/10; break;
-    case SZ_GARGANTUAN:     mHP = (mHP*16)/10; break;
-    case SZ_COLLOSAL:       mHP = (mHP*20)/10; break;
-  }
+    mMana += AbilityLevel(CA_MAGICAL_NATURE);
 
-  cHP += mHP;
+    /* It's possible for stati disabling to invoke this when the player is between
+        levels.  So now we check the coord is valid. */
+    if (isPlayer() && theGame->InPlay() && thisp->MyTerm && thisp->x != -1)
+        thisp->ShowStats();
 
-  if (cHP <= 0 && !isDead()) {
-    if (SavingThrow(FORT,20,SA_DEATH)) {
-      IPrint("You stagger from the renewed seriousness of your injuries!");
-      cHP = 1;
-      }
-    else {
-      IDPrint("Belatedly, you drop dead.", "Belatedly, the <Obj> drops dead.", this);
-      Throw(EV_DEATH,this,this);
-      }
-  }
+    // ww: calculate bonus spell slots ... this used to be in GainAbility,
+    // but players can get frustrated if they read a Tome of Super Int +2 and
+    // don't immediately get those bonus spells!
+    uint8 intScaled = min(max(IAttr(A_INT) - 9, 0), 21);
+    // while were here, change the logic a bit (I know, I know ...) so that
+    // your maximum number of bonus spells for spell level X is equal to the
+    // number of normal spells you could get for level X (unless level 1, at
+    // which point all) (and still limited by INT). Why? When a mage gets her
+    // first 3rd level spell, she only gets one, and there's not much
+    // variety. Typically there's some "best" spell that everyone has to take
+    // (e.g., flame strike, stoneskin) first at high levels. This leads to
+    // very little mage variety. And at high levels it takes a long time to
+    // gain two more levels to get one more spell slot. Basically, with the
+    // old algorithm I'm not sure I ever saw a caster get a bonus 3rd level
+    // spell slot (you'd need to be 8th level). Anyway, now you'll get a
+    // bonus spell right away and you'll have 4 total by the time you go up
+    // two levels. 
+    // fjm: Slight tweak here -- it's very possible to get more bonus spells
+    //      at a level than you will ever get of regular spell. Change this
+    //      to bonus slots == max(normal slots, number of levels you've
+    //      advanced since first getting access to that specific slot.
 
-  int16 a_mana = A_WIS;
-  if (one_body && Mod(A_CON) > Mod(A_WIS))
-      a_mana = A_CON; 
-
-  mMana = 0;
-  for (i=0;i!=3;i++)
-    if (Level[i])
-    {
-      for (j=0;j!=Level[i];j++)
-        mMana += thisp->manaRolls[i][j];
+    uint16 casterLevel = AbilityLevel(CA_SPELLCASTING);
+    if (casterLevel > 0) {
+        for (i = 0; i != 9; i++) {
+            if (SpellTable[casterLevel][i] > SpellSlots[i])
+                SpellSlots[i] = SpellTable[casterLevel][i];
+        }
     }
-    
-  mMana *= ManaMultiplier[TotalLevel()];
-  mMana += 10;
-  mMana += Mod((int8)a_mana) * TotalLevel();
-    
-  mMana += AbilityLevel(CA_MAGICAL_NATURE);
-
-  /* It's possible for stati disabling to invoke this when the player is between
-     levels.  So now we check the coord is valid. */
-  if (isPlayer() && theGame->InPlay() && thisp->MyTerm && thisp->x != -1)
-    thisp->ShowStats();
-
-  // ww: calculate bonus spell slots ... this used to be in GainAbility,
-  // but players can get frustrated if they read a Tome of Super Int +2 and
-  // don't immediately get those bonus spells!
-  uint8 intScaled = min(max(IAttr(A_INT)-9,0),21);
-  // while were here, change the logic a bit (I know, I know ...) so that
-  // your maximum number of bonus spells for spell level X is equal to the
-  // number of normal spells you could get for level X (unless level 1, at
-  // which point all) (and still limited by INT). Why? When a mage gets her
-  // first 3rd level spell, she only gets one, and there's not much
-  // variety. Typically there's some "best" spell that everyone has to take
-  // (e.g., flame strike, stoneskin) first at high levels. This leads to
-  // very little mage variety. And at high levels it takes a long time to
-  // gain two more levels to get one more spell slot. Basically, with the
-  // old algorithm I'm not sure I ever saw a caster get a bonus 3rd level
-  // spell slot (you'd need to be 8th level). Anyway, now you'll get a
-  // bonus spell right away and you'll have 4 total by the time you go up
-  // two levels. 
-  // fjm: Slight tweak here -- it's very possible to get more bonus spells
-  //      at a level than you will ever get of regular spell. Change this
-  //      to bonus slots == max(normal slots, number of levels you've
-  //      advanced since first getting access to that specific slot.
-  
-    for (i=1;i<9;i++)
-      BonusSlots[0] = 0;
   
     /* Give all bonus slots at 1st */
     if (SpellSlots[0]) {
-      BonusSlots[0] = BonusSpells[intScaled][0];
-      if (HasFeat(FT_GUILDMAGE))
+        BonusSlots[0] = BonusSpells[intScaled][0];
+        if (HasFeat(FT_GUILDMAGE))
         BonusSlots[0]++;
-      }
+    }
+    else {
+        BonusSlots[0] = 0;
+    }
     
     
-    /* Scale slots for spell levels 2-9 */
-    for (i=1;i<9;i++) { 
-      BonusSlots[i] = min( BonusSpells[intScaled][i] ,
-                               max( SpellSlots[i] ,
-                               CasterLev() - SAL(i+1) ) ) ; 
+  /* Scale slots for spell levels 2-9 */
+  for (i=1;i<9;i++) { 
+    BonusSlots[i] = min( BonusSpells[intScaled][i] ,
+                            max( SpellSlots[i] ,
+                            CasterLev() - SAL(i+1) ) ) ; 
 
-      // back to auto-learning domain spells.
-      // if (x == 1) XBonusSlots[x][i]++; // cleric domain slot!
-      }
+    // back to auto-learning domain spells.
+    // if (x == 1) XBonusSlots[x][i]++; // cleric domain slot!
+    }
   
   StatiIterNature(this,BONUS_SLOTS)
     BonusSlots[S->Val-1] += S->Mag;

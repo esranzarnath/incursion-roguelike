@@ -2973,12 +2973,7 @@ void Player::GainAbility(int16 ab, uint32 pa, rID sourceID, int16 statiSource) {
         break;
     case CA_SPELLCASTING:
         Abilities[ab] += (uint8)pa;
-        for(i=0; i!=9; i++) {
-            if (SpellTable[Abilities[ab]][i] > SpellSlots[i])
-                SpellSlots[i]++;
-        }
-        if (Abilities[ab] == 1) // 1st level
-            BonusSlots[0] = BonusSpells[min(max(IAttr(A_INT)-9,0),21)][0];
+        
         break;     
     case CA_DOMAINS:
         /* Learn the Spells */
