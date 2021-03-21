@@ -885,7 +885,7 @@ EvReturn Magic::MagicStrike(EventInfo &e) {
             e.Immune = true;
         else if (e.EVictim->HasStati(GAZE_REFLECTION,GR_REFLECT)) {
             e.EActor->IDPrint("Your gaze is reflected back at you!",
-                "The <Obj>'s gaze is reflected back at <him:Obj>!", e.EActor);
+                "The <Obj1>'s gaze is reflected back at <him:Obj1>!", e.EActor);
             e.EVictim = e.EActor;
         }
     }
