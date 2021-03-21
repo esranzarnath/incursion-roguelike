@@ -443,7 +443,8 @@ const char * SlotLetters =
 
 int16 itemGroups[] = 
   { T_WEAPON, T_BOW, T_MISSILE, T_ARMOUR, T_SHIELD,
-    T_POTION, T_SCROLL, T_WAND, T_TOOL, T_COIN, T_FOOD, T_ITEM, 0 };
+    T_POTION, T_SCROLL, T_WAND, T_TOOL, T_COIN, T_FOOD,
+    T_BOOK, T_ITEM, 0 };
 
 inline int16 sortOrder(Item *it) {
     int16 i;
