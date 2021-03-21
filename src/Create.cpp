@@ -3357,7 +3357,6 @@ uint16 Character::getEligableStudies()
 {
     uint16 eli;
     int16 clev = TotalLevel();
-    int16 mlev = ((clev*4)+4)/5;
     int16 i, j;
 
     /* If you want to tweak the numbers for Intensive
@@ -3366,11 +3365,35 @@ uint16 Character::getEligableStudies()
 
     eli = 0;
     for (i=0;Studies[i][0];i++)
-        if (Abilities[Studies[i][1]])
-            if (Studies[i][3] * (Abilities[Studies[i][1]] + 
-                IntStudy[Studies[i][0]] * Studies[i][2]) < mlev)
-                if (Abilities[Studies[i][1]] > IntStudy[Studies[i][0]]*Studies[i][2])
+        if (Abilities[Studies[i][1]]) {
+            //All these studies are limited to no more then 4/5 the total character level
+            //Except that levels of classes which grant the ability at the normal rate should not count against you.
+            //for example, a bard 4 could take the caster level study twice, so a bard 4 mage 1 should also be able to.
+            // so only the number of ability granting character levels as are neccecary to be eligible for the second requirement (twice natural ability) should be counted
+            // but every character lebel which did not grant an ability level should be counted
+            // to solve this, the formula for caster levels should be 
+            // (cl from study) *2 + 1 < (4/5) ( character level + cl from study - natural caster level + 1 )
+            // 10 * (cl from study) + 5 < 4 * ( character level + cl from study - natural caster level + 1 )
+            // 6 * (cl from study) + 1 < 4 * (character level - natural caster level)
+            // to solve the general case
+            // (times taken study) * (improvement from study) * 2 + (improvement from single level) < 4/5 improvement from single level * (character level + times taken study * improvement from study / improvement from single level - natural ability level / improvement from single level + 1)
+            // (times taken study) * (improvment from study) * 2 + improvement from single level < 4/5 * (character level * improvement from single level + times taken study * improvement from study - natural ability level + improvement from single level)
+            // 10 * times taken study * improvment from study + 5 * improvement from single level < 4 * (character level * improvement from single level + times taken study * improvement from study - natural ability level + improvement from single level)
+            // 6 * times taken study * improvment from study + improvement from single level < 4 * (character level * improvement from single level - natural ability level)
+            // however, improvement from single level can only be <1, so we instead use levelsPerImprovement = 1 / improvement from single level
+            // 6 * times taken study * improvement from study + 1 / levelsPerImprovement < 4 * (character level / levelsPerImprovement - natural ability level)
+            // 6 * times taken study * improvement from study * levelsPerImprovement + 1 < 4 * (character level - natural ability level * levelsPerImprovement)
+            uint8 naturalAbilityLevel = Abilities[Studies[i][1]];
+            int16 improvementFromStudy = Studies[i][2];
+            int16 levelsPerImprovement = Studies[i][3];
+            int16 timesTakenStudy = IntStudy[Studies[i][0]];
+
+            if (6 * timesTakenStudy * improvementFromStudy * levelsPerImprovement + 1
+                < 4 * (clev - naturalAbilityLevel * levelsPerImprovement))
+                //All these studies are also limited to twice the natural ability they increase.
+                if (naturalAbilityLevel > timesTakenStudy * improvementFromStudy)
                     eli |= XBIT(Studies[i][0]);
+        }
 
 
     int8 warriorLevels[4] = { 0, 0, 0, 0 };
