@@ -511,6 +511,7 @@ bool Item::operator==(Item &i)
         case T_CORPSE:
           if (GetCorpseType() != i.GetCorpseType())
             return false;
+          break;
         case T_BOOK:
           easyStack = true;
           break;
