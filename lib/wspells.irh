@@ -6542,21 +6542,22 @@ Wizard Spell "Phantasmal Killer" : EA_GENERIC
       is slain outright, or merely becomes Afraid and suffers 1d6
       points each of Wisdom and Charisma damage.";
     On Event EV_MAGIC_HIT {
+      if (ETarget->ResistLevel(AD_FEAR) == -1) {
+        VPrint(e,"You see your worst fear, but courage lets you turn aside an icy feeling!",
+               "The <EVictim> looks resolute.");
+        return DONE;
+      }
       VPrint(e,"You feel your heart turn to ice!",
                "The <EVictim> turns deathly pale!");
       if (ETarget->SavingThrow(FORT,e.saveDC,SA_ILLUS|SA_DEATH|SA_FEAR))
-        {
-          if (EActor->ResistLevel(AD_FEAR) != -1) {
-            ThrowDmg(EV_DAMAGE,AD_DAWI,1d6,"a phantasm",EActor,EVictim);
-            ThrowDmg(EV_DAMAGE,AD_DAWI,1d6,"a phantasm",EActor,EVictim);
-            EVictim->GainTempStati(AFRAID,EActor,e.vDuration,SS_ENCH,0,0,$"Phantasmal Killer");
-          } 
-          EVictim->IPrint("You narrowly avoid death by terror!");
-        }
-        // ww: this check always seems to fail, even if you're 
-        // wearing a ring of boldness and certainly have reslevel -1
-      else if (EActor->ResistLevel(AD_FEAR) != -1)
-        ThrowDmg(EV_DEATH,AD_NECR,0,"a phantasmal killer",EActor,EVictim);
+      {
+        ThrowDmg(EV_DAMAGE,AD_DAWI,1d6,"a phantasm",EActor,EVictim);
+        ThrowDmg(EV_DAMAGE,AD_DAWI,1d6,"a phantasm",EActor,EVictim);
+        EVictim->GainTempStati(AFRAID,EActor,e.vDuration,SS_ENCH,0,0,$"Phantasmal Killer");
+        EVictim->IPrint("You narrowly avoid death by terror!");
+        return DONE;
+      }
+      ThrowDmg(EV_DEATH,AD_NECR,0,"a phantasmal killer",EActor,EVictim);
       return DONE;
       };
     Flags: EF_MENTAL, EF_DEATH, EF_FEAR; Purpose: EP_ATTACK (VS_MENTAL);
