@@ -4112,6 +4112,8 @@ String & TEffect::Describe(Player *p) {
         s += HasFlag(EF_PARTIAL) ? "<5>Will<7> partial. " : "<5>Will<7> negates. ";
         break;
     }
+    //Not all spells that hold mana have this tag, but most do. Exception is heal spells, which usually have it.
+    if (HasFlag(EF_LOSEMANA)) s += ("Held ");
     if (HasFlag(EF_VARMANA))
         s += Format("Mana: <11>Variable<7>. ");
     else if (ManaCost && p)
@@ -4121,6 +4123,7 @@ String & TEffect::Describe(Player *p) {
         s += Format("Mana: <11>%d<7>. ",ManaCost);
     else
         s += "Mana: <11>None<7>. ";
+
 
     if (HasFlag(EF_D1ROUND)) s += ("1 round duration. ");
     else if (HasFlag(EF_DSHORT)) s += ("Short duration. ");
