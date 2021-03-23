@@ -1864,8 +1864,14 @@ void TTemplate::Dump() {
 
     Resource::Dump();
     T1->SWrite("  NewImage ");
-    T1->Color(GLYPH_FORE_VALUE(NewImage));
-	T1->SWrite(Format("%c%c%c", LITERAL_CHAR, LITERAL_CHAR1(gid), LITERAL_CHAR2(gid)));
+
+    if(gid != 0) {
+        T1->Color(GLYPH_FORE_VALUE(NewImage));
+	    T1->SWrite(Format("%c%c%c", LITERAL_CHAR, LITERAL_CHAR1(gid), LITERAL_CHAR2(gid)));
+    }
+    else {
+        T1->SWrite("NO_NEW_IMAGE");
+    }
     T1->Color(GREY);
     T1->SWrite("\n  NewAttk: (constant names only vaguely correct)");
     for(i=0;i<16;i++) {
