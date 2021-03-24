@@ -444,7 +444,13 @@ EvReturn Creature::OfferTerms(EventInfo &e) {
         return ABORT;
     }
 
-    if (!e.EVictim->isMType(MA_EVIL) && e.EVictim->HasMFlag(M_IALIGN) && !e.EVictim->HasStati(WAS_FRIENDLY, -1, e.EActor))
+    /*
+    * It is good to spare any enemy which is not inherently evil. Inherent evil must be destroyed.
+    * It is not good to spare an enemy you attacked.
+    * It is more good to spare non evil enemies, who are less likely to go on to do evil,
+    * but it is still good to spare evil enemies since good must value all lives.
+    */
+    if (!(e.EVictim->isMType(MA_EVIL) && e.EVictim->HasMFlag(M_IALIGN)) && !e.EVictim->HasStati(WAS_FRIENDLY, -1, e.EActor))
         e.EActor->AlignedAct(AL_GOOD, e.EVictim->isMType(MA_EVIL) ? 1 : 3, "offering terms");
 
     CheckDC = 5;
