@@ -1334,15 +1334,19 @@ EvReturn Creature::Request(EventInfo &e) {
         MapIterate(m,cr,i)
           if (cr->isCreature() && cr->isFriendlyTo(e.EVictim)) {
             cr->GainTempStati(TRIED,this,-2,SS_MISC,EV_REQUEST*100);
-            if (sk != SK_DIPLOMACY)
+            if (sk != SK_DIPLOMACY) {
               cr->ts.TurnHostileTo(cr,this);
+
+              cr->GainPermStati(WAS_FRIENDLY, this, SS_MONI);
             }
+          }
         Failed:
-        if (sk != SK_DIPLOMACY)    
+        if (sk != SK_DIPLOMACY) {
           IPrint("The <Obj><str> <str> and gets angry!", e.EVictim,
             c == 1 ? "" : "'s group",
             sk == SK_BLUFF ? "sees through your deception" :
             "resists your coercion");
+        }
         else
           IPrint("You fail to persuade the <Obj><Str>.",e.EVictim,
             c == 1 ? "" : "'s group");
