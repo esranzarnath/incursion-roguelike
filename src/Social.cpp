@@ -1076,10 +1076,14 @@ EvReturn Creature::Quell(EventInfo &e) {
     }
 
     sk = SK_DIPLOMACY;
-    if (isREnemy) {
-        /* Resolving Conflicts */
-        if (!e.EVictim->isMType(MA_EVIL))
-            e.EActor->AlignedAct(AL_GOOD,3,"resolving conflict");
+    //its not considered exploitation to attack and then resolve conflict with racial enemy?
+    if (isREnemy || !wasDamaged) {
+        /* Resolving Conflicts
+           It is only good to resolve conflict with non evil enemies. You should kill evil enemies or make them surrender.
+           It is more good to resolve conflict with racial enemies
+        */
+        if (!e.EVictim->isMType(MA_EVIL) && !e.EVictim->HasStati(WAS_FRIENDLY, -1, e.EActor))
+            e.EActor->AlignedAct(AL_GOOD,isREnemy?3:1,"resolving conflict");
     } else if (wasDamaged) {
         /* Exploitation */
         if (!e.EActor->yn("Confirm use exploitation?"))
