@@ -6914,26 +6914,58 @@ EvReturn Creature::Death(EventInfo &e)
       // Creature::StatiOff does everything else.
       return DONE;
     } 
+
+  bool wasFriendly = HasStati(WAS_FRIENDLY, -1, e.EActor);
     
   if (HasMFlag(M_IALIGN) && e.EActor != e.EVictim)
     if (e.EActor->isCharacter())
       {
         uint16 dAlign = e.EPActor->desiredAlign;
         if (isMType(MA_EVIL) && (dAlign & AL_GOOD))
-          e.EActor->AlignedAct(AL_GOOD,1);
+          e.EActor->AlignedAct(AL_GOOD,1,
+            "killing an inherently evil creature");
         if (isMType(MA_CHAOTIC) && (dAlign & AL_LAWFUL))
-          e.EActor->AlignedAct(AL_LAWFUL,1);
-        if (isMType(MA_LAWFUL) && (dAlign & AL_CHAOTIC))
-          e.EActor->AlignedAct(AL_CHAOTIC,1);
+          e.EActor->AlignedAct(AL_LAWFUL,1,
+              "killing an inherently chaotic creature");
+        if (isMType(MA_LAWFUL)) {
+            if(dAlign & AL_CHAOTIC)
+              e.EActor->AlignedAct(AL_CHAOTIC|AL_NONLAWFUL,1,
+                  "killing an inherently lawful creature");
+            // lawful character who needlessly destroy lawful influences feel guilty/foolish
+            else if (wasFriendly && !isMType(MA_EVIL) && !isMType(MA_GOOD)) {
+                e.EActor->AlignedAct(AL_NONLAWFUL, 1,
+                    "unprovoked killing of an inherently lawful creature");
+            }
+        }
         if (isMType(MA_GOOD))
-          e.EActor->AlignedAct(AL_EVIL,2,
-            "killing a good creature");
+          e.EActor->AlignedAct(AL_EVIL|AL_NONGOOD,2,
+            "killing an inherently good creature");
       }
   
-  if (e.EActor != e.EVictim)
-    if (HasStati(WAS_FRIENDLY,-1,e.EActor) && !isMType(MA_EVIL))
+  if (e.EActor != e.EVictim) {
+    if (wasFriendly && !isMType(MA_EVIL))
       e.EActor->AlignedAct(AL_EVIL|AL_NONGOOD,3 + isMType(MA_GOOD)*2,
         "unprovoked killing");
+    else if(!HasMFlag(M_IALIGN)) {
+        uint16 dAlign = e.EPActor->desiredAlign;
+        int16 roll = Dice::Roll(1, 10);
+        if (isMType(MA_EVIL) && (dAlign & AL_GOOD) && !wasFriendly)
+            if(roll==10) e.EActor->AlignedAct(AL_GOOD|AL_NONEVIL, 1, "fighting evil");
+        if (isMType(MA_CHAOTIC) && !wasFriendly && !(dAlign & AL_CHAOTIC))
+            if(roll==9 || roll == 8) e.EActor->AlignedAct(AL_NONCHAOTIC, 1, "enforcing order");
+        if (isMType(MA_LAWFUL) && !(dAlign & AL_CHAOTIC))
+            if (roll == 9 || roll == 8) {
+                if (dAlign & AL_EVIL) {
+                    e.EActor->AlignedAct(AL_NONLAWFUL, 1, "destroying order");
+                } else {
+                    e.EActor->AlignedAct(AL_NONLAWFUL, 1, "fighting opression");
+                }
+            }
+        if (isMType(MA_GOOD) && (dAlign & AL_EVIL))
+            if (roll < 5) e.EActor->AlignedAct(AL_EVIL|AL_NONGOOD, 1,
+                "killing a good creature");
+    }
+  }
     
   if (HasStati(ENGULFER))
     DropEngulfed();
