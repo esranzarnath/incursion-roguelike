@@ -2017,39 +2017,67 @@ EvReturn Character::AlignedAct(EventInfo &e)
     dAlign = desiredAlign; nAlign = cAlign;
     isGuilty = false;
     isFoolish = false;
+    bool isClever = false;
+    bool isNoble = false;
+    bool isFree = false;
+    bool isRighteous = false;
+    bool feltGood = false;
 
+    int16 prevAlignGE = alignGE;
+    int16 prevAlignLC = alignLC;
+
+    // good with any non evil intent is non evil
+    if(e.EParam & AL_GOOD && !(dAlign & AL_EVIL)) e.EParam |= AL_NONEVIL;
+    // evil with any non good intent is non good
+    if(e.EParam & AL_EVIL && !(dAlign & AL_GOOD)) e.EParam |= AL_NONGOOD;
+    // chaos with chaotic intent is non lawful, even if otherwise acceptable for lawful alginment
+    if (e.EParam & AL_CHAOTIC & dAlign) e.EParam |= AL_NONLAWFUL;
+    // lawful with lawful intent is non chaotic, even if otherwise acceptable for chaotic alignment
+    if (e.EParam & AL_LAWFUL & dAlign) e.EParam |= AL_NONCHAOTIC;
+
+    //NOTE as far as I know, there are NO NONEVIL actions, not even sacrificing to a GOOD god. This is part of why
+    // I added the above rules
+
+    // a chaotic evil character who desires chaos cannot violate the chaotic portion of their alignment
     if (cAlign & AL_EVIL)
-      if (cAlign & AL_CHAOTIC)
+      if (cAlign & AL_CHAOTIC & dAlign)
         if (e.EParam & AL_NONCHAOTIC)
           e.EParam &= (~AL_NONCHAOTIC);
-
     
     if (cAlign & AL_GOOD) {
       if (e.EParam & AL_NONGOOD) {
         alignGE = (alignGE * (10 - (int16)e.vMag)) / 10;
         isGuilty = true;
         }
-      else if (e.EParam & AL_GOOD)
+      else if (e.EParam & AL_GOOD) {
         alignGE -= (int16)e.vMag;
+        isRighteous = true;
+      }
+      //good actions without good intent cannot make a good character than nominally good
       if (!(dAlign & AL_GOOD))
-        alignGE = max(-30, alignGE);
+        alignGE = max(min(-30, prevAlignGE), alignGE);
       }
     else if (cAlign & AL_EVIL) {
       if (e.EParam & AL_NONEVIL) {
         alignGE = (alignGE * (10 - (int16)e.vMag)) / 10;
         isFoolish = true;
         }
-      else if (e.EParam & AL_EVIL)
+      else if (e.EParam & AL_EVIL) {
         alignGE += (int16)e.vMag;
+        feltGood = true;
+      }
+      //evil actions without evil intent cannot make an evil character more than nominally evil
       if (!(dAlign & AL_EVIL))
-        alignGE = min(30, alignGE);
+        alignGE = min(max(30, prevAlignGE), alignGE);
       }
     else if (e.EParam & AL_GOOD) {
       alignGE -= (int16)e.vMag;
+      //good actions without good intent can only make a neutral character more neutral
       if (!(dAlign & AL_GOOD))
-        alignGE = max(alignGE,0);
+        alignGE = max(alignGE,min(0, prevAlignGE));
       }
     else if (e.EParam & AL_EVIL)
+      //a neutral character's evil actions make them more evil
       alignGE += (int16)e.vMag;
       
     if (alignGE > -20)
@@ -2070,10 +2098,16 @@ EvReturn Character::AlignedAct(EventInfo &e)
         else
           isGuilty = true;
         }
-      else if (e.EParam & AL_LAWFUL)
+      else if (e.EParam & AL_LAWFUL) {
         alignLC -= (int16)e.vMag;
+        if (cAlign & AL_EVIL)
+            isClever = true;
+        else
+            isNoble = true;
+      }
+      // lawful actions without lawful intent cannot make a character more than nominally lawful
       if (!(dAlign & AL_LAWFUL))
-        alignLC = max(-30, alignLC);
+        alignLC = max(min(-30, prevAlignLC), alignLC);
       }
     else if (cAlign & AL_CHAOTIC) {
       if (e.EParam & AL_NONCHAOTIC) {
@@ -2082,21 +2116,26 @@ EvReturn Character::AlignedAct(EventInfo &e)
           isFoolish = true;
         else
           isGuilty = true;
-        }
-      else if (e.EParam & AL_CHAOTIC)
-        alignLC += (int16)e.vMag;
-      if (!(dAlign & AL_CHAOTIC))
-        alignLC = max(30, alignLC);
       }
+      else if (e.EParam & AL_CHAOTIC) {
+        alignLC += (int16)e.vMag;
+        isFree = true;
+      }
+      //chaotic actions without chaotic intent cannot make a character more than nominally chaotic
+      if (!(dAlign & AL_CHAOTIC))
+        alignLC = min(max(30,prevAlignLC), alignLC);
+    }
     else if (e.EParam & AL_LAWFUL) {
       alignLC -= (int16)e.vMag;
+      // lawful actions without lawful intent can only make neutral characters more neutral
       if (!(dAlign & AL_LAWFUL))
-        alignLC = max(alignLC,0);
+        alignLC = max(alignLC,min(0, prevAlignLC));
       }
     else if (e.EParam & AL_CHAOTIC) {
       alignLC -= (int16)e.vMag;
+      // chaotic actions without chaotic intent can only make neutral characters more neutral
       if (!(dAlign & AL_CHAOTIC))
-        alignLC = min(alignLC,0);
+        alignLC = min(alignLC,max(0, prevAlignLC));
       }
     
     alignLC = max(-70,min(70,alignLC));
@@ -2114,14 +2153,22 @@ EvReturn Character::AlignedAct(EventInfo &e)
     if (abs(alignLC) < 20 && !(cAlign & (AL_LAWFUL|AL_CHAOTIC)) && 
          (e.EParam & (AL_CHAOTIC|AL_LAWFUL|AL_NONCHAOTIC|AL_NONLAWFUL)))
       {
-        if (abs(alignLC) >= 10)
+        if (alignLC != prevAlignLC)
           IPrint ((theGame->Opt(OPT_TRANSGRESS_HINTS) && e.GraveText.GetLength())
             ? "You feel closer to <Str>." : "You feel closer to <Str> (<Str>).",
-            alignLC < 0 ? "lawful stability" : "chaotic independence", 
+            (alignLC-prevAlignLC) < 0 ? "lawful stability" : "chaotic independence", 
             (const char*) e.GraveText);
-        if (!(e.EParam & (AL_GOOD|AL_EVIL|AL_NONGOOD|AL_NONEVIL)))
-          goto SkipGuiltMessages;
       }
+
+    if (abs(alignGE) < 20 && !(cAlign & (AL_GOOD | AL_EVIL)) &&
+        (e.EParam & (AL_GOOD | AL_EVIL | AL_NONGOOD | AL_NONEVIL)))
+    {
+        if (alignGE != prevAlignGE && theGame->Opt(OPT_TRANSGRESS_HINTS))
+            IPrint((theGame->Opt(OPT_TRANSGRESS_HINTS) && e.GraveText.GetLength())
+                ? "You feel <Str>." : "You feel somewhat <Str> (<Str>).",
+                (alignGE - prevAlignGE) < 0 ? "virtuous" : "wicked",
+                (const char*)e.GraveText);
+    }
       
     if (e.GraveText.GetLength() && theGame->Opt(OPT_TRANSGRESS_HINTS)) {
       if (isFoolish) 
@@ -2130,7 +2177,24 @@ EvReturn Character::AlignedAct(EventInfo &e)
       else if (isGuilty)
         IPrint("<5>You feel guilty (<Str>).<7>",
           (const char*)e.GraveText);
+
+      if (alignLC != prevAlignLC) {
+        if(isNoble)
+            IPrint("<5>You feel noble (<Str>).<7>",
+                (const char*)e.GraveText);
+        if (isFree)
+            IPrint("<5>You feel free (<Str>).<7>",
+                (const char*)e.GraveText);
       }
+      if(alignGE != prevAlignGE) {
+        if (feltGood)
+            IPrint("<5>That felt good (<Str>).<7>",
+                (const char*)e.GraveText);
+        if (isRighteous)
+            IPrint("<5>You feel righteous (<Str>).<7>",
+                (const char*)e.GraveText);
+      }
+    }
     else {
       if (isFoolish) 
         IPrint("<5>You feel foolish.<7>");
