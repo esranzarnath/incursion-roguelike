@@ -4254,6 +4254,8 @@ EvReturn Creature::Strike(EventInfo &e) /* this == EActor */
             break;
         } 
         for (i++ ; i<max ; i++) {
+          //end attack sequence when target dies
+          if(e.EVictim->isDead()) break;
           TAttack * at = &buf[i];
           if (at->AType == A_ALSO || at->AType == A_CRIT) { 
             if (at->AType == A_ALSO || e.isCrit)
