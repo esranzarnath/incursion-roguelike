@@ -6953,7 +6953,7 @@ EvReturn Creature::Death(EventInfo &e)
             if(roll==10) e.EActor->AlignedAct(AL_GOOD|AL_NONEVIL, 1, "fighting evil");
         if (isMType(MA_CHAOTIC) && !wasFriendly && !(dAlign & AL_CHAOTIC))
             if(roll==9 || roll == 8) e.EActor->AlignedAct(AL_NONCHAOTIC, 1, "enforcing order");
-        if (isMType(MA_LAWFUL) && !(dAlign & AL_CHAOTIC))
+        if (isMType(MA_LAWFUL) && !(dAlign & AL_LAWFUL))
             if (roll == 9 || roll == 8) {
                 if (dAlign & AL_EVIL) {
                     e.EActor->AlignedAct(AL_NONLAWFUL, 1, "destroying order");
