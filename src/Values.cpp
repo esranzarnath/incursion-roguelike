@@ -1708,9 +1708,9 @@ void Character::CalcValues(bool KnownOnly, Item *thrown)
     //      advanced since first getting access to that specific slot.
 
     uint16 casterLevel = AbilityLevel(CA_SPELLCASTING);
+    //IPrint("Calculating spell slots for caster level <Num>", casterLevel);
     if (casterLevel > 0) {
         for (i = 0; i != 9; i++) {
-            if (SpellTable[casterLevel][i] > SpellSlots[i])
                 SpellSlots[i] = SpellTable[casterLevel][i];
         }
     }
