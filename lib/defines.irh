@@ -43,6 +43,10 @@
   Flags: EF_NOTBAD, EF_PERSISTANT, EF_LOSEMANA, EF_SHOWNAME, EF_CANCEL; \
   Base: SP_BUFF; Purpose: EP_BUFF; Cost: the_cost
 
+#define IS_A_NON_PERSISTANT_BUFF(the_cost) \
+  Flags: EF_NOTBAD,EF_DLONG, EF_SHOWNAME, EF_CANCEL; \
+  Base: SP_BUFF; Purpose: EP_BUFF; Cost: the_cost
+
 #define COST_1     5
 #define COST_1X    10
 #define COST_2     15
