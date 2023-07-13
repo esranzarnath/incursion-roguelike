@@ -1854,7 +1854,7 @@ void Creature::GainInherentBonus(int16 at, int16 mag, bool msg)
 
     CurrBonus = SumStatiMag(ADJUST_INH,at);
 
-    if (CurrBonus == MaxBonus) {
+    if (CurrBonus >= MaxBonus) {
       if (msg)
         IPrint("You feel a profound sense of wastefulness.");
       return;
