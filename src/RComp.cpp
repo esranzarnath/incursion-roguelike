@@ -865,6 +865,9 @@ Repeat:
                 case DT_INT16:
                     fprintf (fp, "->%s = (int16)val;\n         break;\n",theSymTab[i]);
                     break;
+                case DT_INT32:
+                    fprintf(fp, "->%s = (int32)val;\n         break;\n", theSymTab[i]);
+                    break;
                 case DT_UINT16:
                     fprintf (fp, "->%s = (uint16)val;\n         break;\n",theSymTab[i]);
                     break;
