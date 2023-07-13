@@ -21,3 +21,5 @@ lib/program.i
 
 # Local nonsense.
 _external
+build/.vs/
+*.zip

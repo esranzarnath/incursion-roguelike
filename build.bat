@@ -39,7 +39,7 @@ REM      LINKS[n]=<url to zip>
 REM      LINKS[n]=vcs <vcs-system> <name> <revision-id> <repo-path> <snapshot-url>
 REM        <revision-id>: This can be a URL, or it can be a filesystem path to an existing local clone.
 
-set LINKS[0]=http://sourceforge.mirrorservice.org/w/wi/winflexbison/win_flex_bison-latest.zip
+set LINKS[0]=./win_flex_bison-latest.zip
 set LINKS[1]=vcs hg libtcod default https://bitbucket.org/libtcod/libtcod https://bitbucket.org/libtcod/libtcod/get/REV.zip
 set LINKS[2]=https://www.nano-editor.org/dist/win32-support/pdcurs34.zip
 set LINKS[3]=vcs git gyp 702ac58 https://chromium.googlesource.com/external/gyp https://chromium.googlesource.com/external/gyp/REV.tar.gz
@@ -633,6 +633,8 @@ goto internal_function_exit
 REM --- FUNCTION: internal_function_setup ------------------------------------
 :internal_function_setup
 
+set VS140COMNTOOLS=C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\
+
 REM Ensure that we have a properly set up developer console with access to things like msbuild and devenv.
 if "%BYPASS_VS_CHECK%" NEQ "yes" (
 	REM Ensure that we have a properly set up developer console with access to things like msbuild and devenv.
@@ -650,9 +652,9 @@ if "%BYPASS_VS_CHECK%" NEQ "yes" (
 	CALL "%VS140COMNTOOLS%VsDevCmd.bat"
 )
 
-if "%VisualStudioVersion%" NEQ "14.0" (
+if "%VisualStudioVersion%" NEQ "16.0" (
 	echo Visual Studio incorrect.
-	echo Expected: "14.0"
+	echo Expected: "16.0"
 	echo Got: "%VisualStudioVersion%"
 	pause & exit /b
 )
@@ -1121,7 +1123,7 @@ set /A L_ATTEMPTS=0
 
 if not exist "!V_LINK_PARTS[%HTTP_NAME%]!" (
     echo Downloading: [!V_LINK_PARTS[%HTTP_NAME%]!]
-    powershell -c "Start-BitsTransfer -source !V_LINK_PARTS[%HTTP_URL%]!"
+    powershell -c "import-module bitstransfer; Start-BitsTransfer -source !V_LINK_PARTS[%HTTP_URL%]!"
 
     if not exist !V_LINK_PARTS[%HTTP_FILENAME%]! (
         echo Failed to download !V_LINK_PARTS[%HTTP_FILENAME%]!
