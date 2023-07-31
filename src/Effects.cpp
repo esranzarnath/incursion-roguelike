@@ -1576,7 +1576,10 @@ EvReturn Magic::Terraform(EventInfo &e)
       tr->SaveDC   = e.EMagic->sval == NOSAVE ? 0 : e.saveDC;
       tr->Duration = TEFF(e.eID)->HasFlag(EF_PERMANANT) ? 0 : e.vDuration;
       tr->eID      = e.eID;
-      tr->Creator  = e.EActor->myHandle;
+      // don't credit creatures as deliberately making terrain for traps they triggered
+      if(!e.isTrap) {
+        tr->Creator  = e.EActor->myHandle;
+      }
       if (e.MM & MM_MAXIMIZE)
         tr->pval.Set(0,0,e.Dmg.Number*e.Dmg.Sides+e.Dmg.Bonus);
       else
